@@ -1,7 +1,7 @@
 import type { NoteColor } from './types'
 
-export const MIN_WIDTH = 140
-export const MIN_HEIGHT = 120
+export const MIN_WIDTH = 90
+export const MIN_HEIGHT = 80
 export const DEFAULT_WIDTH = 200
 export const DEFAULT_HEIGHT = 180
 
