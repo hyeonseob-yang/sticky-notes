@@ -30,6 +30,8 @@ npm run lint    # ESLint
 - Delete a note by dragging it onto the trash zone (bottom-right); the trash
   highlights while a note is over it.
 - Edit a note's text by double-clicking it and clicking away (or tabbing) to commit.
+  While editing, a note grows taller to fit overflowing text and never shrinks
+  below its manually set size.
 - Notes come in one of five colors, assigned in rotation as they're created.
 - Clicking or dragging a note brings it to the front of the stack.
 - Notes persist to `localStorage` and are restored on page load.
