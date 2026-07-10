@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react'
 import type { ChangeEvent, FocusEvent, PointerEvent as ReactPointerEvent } from 'react'
 import { useDrag } from '../hooks/useDrag'
-import { clampRectMinSize } from '../utils/geometry'
+import { clampPosition, clampRectMinSize } from '../utils/geometry'
 import { MIN_HEIGHT, MIN_WIDTH } from '../constants'
 import type { Note } from '../types'
 
@@ -29,7 +29,11 @@ export function NoteCard({
   const moveDrag = useDrag({
     onDrag: (delta, point) => {
       if (cardRef.current) {
-        cardRef.current.style.transform = `translate(${delta.dx}px, ${delta.dy}px)`
+        const clamped = clampPosition(
+          { x: note.x + delta.dx, y: note.y + delta.dy, width: note.width, height: note.height },
+          { width: window.innerWidth, height: window.innerHeight },
+        )
+        cardRef.current.style.transform = `translate(${clamped.x - note.x}px, ${clamped.y - note.y}px)`
       }
       onDragMove?.(point)
     },

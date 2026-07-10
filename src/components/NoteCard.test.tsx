@@ -137,6 +137,26 @@ describe('NoteCard', () => {
       expect(card.style.transform).toBe('')
     })
 
+    it('clamps the live transform so the card cannot be dragged past the top-left edge', () => {
+      renderNoteCard({ x: 100, y: 100, width: 200, height: 180 })
+      const card = screen.getByTestId('note-card')
+
+      fireEvent.pointerDown(card, { clientX: 0, clientY: 0, pointerId: POINTER_ID })
+      fireEvent.pointerMove(window, { clientX: -2000, clientY: -2000, pointerId: POINTER_ID })
+
+      expect(card.style.transform).toBe('translate(-100px, -100px)')
+    })
+
+    it('clamps the live transform so the card cannot be dragged past the bottom-right edge', () => {
+      renderNoteCard({ x: 700, y: 500, width: 200, height: 180 })
+      const card = screen.getByTestId('note-card')
+
+      fireEvent.pointerDown(card, { clientX: 0, clientY: 0, pointerId: POINTER_ID })
+      fireEvent.pointerMove(window, { clientX: 2000, clientY: 2000, pointerId: POINTER_ID })
+
+      expect(card.style.transform).toBe('translate(124px, 88px)')
+    })
+
     it('reports the live pointer position via onDragMove while dragging', () => {
       const { onDragMove } = renderNoteCard()
       const card = screen.getByTestId('note-card')
