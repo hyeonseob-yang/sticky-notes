@@ -25,7 +25,9 @@ export interface DragHandlers {
 
 export function useDrag(options: UseDragOptions): DragHandlers {
   const optionsRef = useRef(options)
-  optionsRef.current = options
+  useEffect(() => {
+    optionsRef.current = options
+  })
 
   const cleanupRef = useRef<(() => void) | null>(null)
 
