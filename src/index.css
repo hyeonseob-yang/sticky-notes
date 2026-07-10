@@ -7,6 +7,8 @@
   --accent-contrast: #fff;
   --trash: #4b4b55;
   --trash-contrast: #fff;
+  --error: #d1293d;
+  --error-bg: #fdecee;
 
   --note-yellow: #fff3a3;
   --note-pink: #ffd0e0;
@@ -26,6 +28,8 @@
     --surface: #34323c;
     --trash: #c4c4cc;
     --trash-contrast: #1c1b22;
+    --error: #ff6b7a;
+    --error-bg: #3a1e22;
   }
 }
 
@@ -148,4 +152,34 @@ body {
   background: var(--trash);
   color: var(--trash-contrast);
   transform: scale(1.15);
+}
+
+.save-status {
+  position: fixed;
+  top: 16px;
+  left: 16px;
+  z-index: 9999;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--text);
+  font-size: 13px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.save-status--error {
+  background: var(--error-bg);
+  color: var(--error);
+}
+
+.save-status__retry {
+  border: none;
+  background: none;
+  padding: 0;
+  margin-left: 4px;
+  color: inherit;
+  font: inherit;
+  font-weight: 600;
+  text-decoration: underline;
+  cursor: pointer;
 }
