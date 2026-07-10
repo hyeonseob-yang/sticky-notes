@@ -16,3 +16,6 @@ export const RESIZE_DRAG_THRESHOLD = 1
 export const COLORS: NoteColor[] = ['yellow', 'pink', 'blue', 'green', 'purple']
 
 export const STORAGE_KEY = 'sticky-notes:v1'
+
+// How long to wait after the last change before syncing to the (mocked) server.
+export const SAVE_DEBOUNCE_MS = 500
