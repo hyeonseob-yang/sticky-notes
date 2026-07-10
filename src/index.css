@@ -5,6 +5,8 @@
   --surface: #fff;
   --accent: #aa3bff;
   --accent-contrast: #fff;
+  --danger: #e0245e;
+  --danger-contrast: #fff;
 
   --note-yellow: #fff3a3;
   --note-pink: #ffd0e0;
@@ -22,6 +24,7 @@
     --text: #f3f4f6;
     --border: #38363f;
     --surface: #34323c;
+    --danger: #fb4570;
   }
 }
 
@@ -121,35 +124,27 @@ body {
   right: 24px;
   bottom: 24px;
   z-index: 9999;
-  width: 72px;
-  height: 72px;
+  width: 88px;
+  height: 88px;
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 2px solid var(--border);
+  border: 3px solid var(--danger);
   border-radius: 50%;
   background: var(--surface);
-  color: var(--text);
-  font-size: 28px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-  opacity: 0;
-  transform: scale(0.6);
-  pointer-events: none;
+  color: var(--danger);
+  font-size: 34px;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
   transition:
-    opacity 0.15s ease,
-    transform 0.15s ease,
+    transform 0.1s ease,
     border-color 0.1s ease,
-    background 0.1s ease;
-}
-
-.trash-zone--visible {
-  opacity: 1;
-  transform: scale(1);
+    background 0.1s ease,
+    color 0.1s ease;
 }
 
 .trash-zone--active {
-  border-color: var(--accent);
-  background: var(--accent);
-  color: var(--accent-contrast);
-  transform: scale(1.1);
+  border-color: var(--danger);
+  background: var(--danger);
+  color: var(--danger-contrast);
+  transform: scale(1.15);
 }

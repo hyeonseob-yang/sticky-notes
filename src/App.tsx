@@ -21,7 +21,6 @@ function App() {
   const trashZoneRef = useRef<HTMLDivElement>(null)
   const isOverTrashRef = useRef(false)
   const [isTrashActive, setIsTrashActive] = useState(false)
-  const [isDragging, setIsDragging] = useState(false)
 
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(notes))
@@ -38,10 +37,6 @@ function App() {
     setNotes((prev) => prev.map((note) => (note.id === id ? { ...note, z } : note)))
   }, [])
 
-  const handleDragStart = useCallback(() => {
-    setIsDragging(true)
-  }, [])
-
   const handleDragMove = useCallback((point: { x: number; y: number }) => {
     const bounds = trashZoneRef.current?.getBoundingClientRect()
     const isOver = bounds ? pointInBounds(point, bounds) : false
@@ -52,7 +47,6 @@ function App() {
   }, [])
 
   const handleMove = useCallback((id: string, position: { x: number; y: number }) => {
-    setIsDragging(false)
     if (isOverTrashRef.current) {
       isOverTrashRef.current = false
       setIsTrashActive(false)
@@ -91,11 +85,10 @@ function App() {
             onResize={handleResize}
             onCommitText={handleCommitText}
             onDragMove={handleDragMove}
-            onDragStart={handleDragStart}
           />
         ))}
       </Canvas>
-      <TrashZone ref={trashZoneRef} isActive={isTrashActive} isDragging={isDragging} />
+      <TrashZone ref={trashZoneRef} isActive={isTrashActive} />
     </main>
   )
 }
