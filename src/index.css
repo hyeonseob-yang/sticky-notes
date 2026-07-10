@@ -81,7 +81,7 @@ body {
 .note-card__text {
   flex: 1;
   margin: 0;
-  padding: 12px;
+  padding: 18px;
   overflow-y: auto;
   white-space: pre-wrap;
   word-break: break-word;
@@ -94,7 +94,7 @@ body {
   border: none;
   outline: none;
   background: transparent;
-  padding: 12px;
+  padding: 18px;
   font: inherit;
   color: inherit;
   cursor: text;
