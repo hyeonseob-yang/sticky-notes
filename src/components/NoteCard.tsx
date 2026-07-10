@@ -2,7 +2,7 @@ import { useRef, useState } from 'react'
 import type { ChangeEvent, FocusEvent, PointerEvent as ReactPointerEvent } from 'react'
 import { useDrag } from '../hooks/useDrag'
 import { clampPosition, clampRectMinSize } from '../utils/geometry'
-import { MIN_HEIGHT, MIN_WIDTH } from '../constants'
+import { MIN_HEIGHT, MIN_WIDTH, RESIZE_DRAG_THRESHOLD } from '../constants'
 import type { Note, Rect } from '../types'
 
 export interface NoteCardProps {
@@ -52,6 +52,7 @@ export function NoteCard({
   })
 
   const resizeDrag = useDrag({
+    threshold: RESIZE_DRAG_THRESHOLD,
     onDrag: (delta) => {
       if (cardRef.current) {
         const { width, height } = clampRectMinSize(

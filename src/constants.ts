@@ -9,6 +9,10 @@ export const DEFAULT_HEIGHT = 180
 // rather than a click. Prevents accidental note creation and drops.
 export const DRAG_THRESHOLD = 8
 
+// Resize starts from a small, already-deliberate handle grab, so it uses a
+// much lower threshold than create/move for immediate responsiveness.
+export const RESIZE_DRAG_THRESHOLD = 1
+
 export const COLORS: NoteColor[] = ['yellow', 'pink', 'blue', 'green', 'purple']
 
 export const STORAGE_KEY = 'sticky-notes:v1'
