@@ -3,7 +3,7 @@ import type { ChangeEvent, FocusEvent, PointerEvent as ReactPointerEvent } from 
 import { useDrag } from '../hooks/useDrag'
 import { clampPosition, clampRectMinSize } from '../utils/geometry'
 import { MIN_HEIGHT, MIN_WIDTH } from '../constants'
-import type { Note } from '../types'
+import type { Note, Rect } from '../types'
 
 export interface NoteCardProps {
   note: Note
@@ -11,7 +11,7 @@ export interface NoteCardProps {
   onMove: (id: string, position: { x: number; y: number }) => void
   onResize: (id: string, size: { width: number; height: number }) => void
   onCommitText: (id: string, text: string) => void
-  onDragMove?: (point: { x: number; y: number }) => void
+  onDragMove?: (rect: Rect) => void
 }
 
 export function NoteCard({
@@ -27,15 +27,21 @@ export function NoteCard({
   const cardRef = useRef<HTMLDivElement>(null)
 
   const moveDrag = useDrag({
-    onDrag: (delta, point) => {
+    onDrag: (delta) => {
       if (cardRef.current) {
         const clamped = clampPosition(
           { x: note.x + delta.dx, y: note.y + delta.dy, width: note.width, height: note.height },
           { width: window.innerWidth, height: window.innerHeight },
         )
         cardRef.current.style.transform = `translate(${clamped.x - note.x}px, ${clamped.y - note.y}px)`
+        const liveRect = cardRef.current.getBoundingClientRect()
+        onDragMove?.({
+          x: liveRect.x,
+          y: liveRect.y,
+          width: liveRect.width,
+          height: liveRect.height,
+        })
       }
-      onDragMove?.(point)
     },
     onDragEnd: (delta) => {
       if (cardRef.current) {

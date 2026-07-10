@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { Canvas } from './components/Canvas'
 import { NoteCard } from './components/NoteCard'
 import { TrashZone } from './components/TrashZone'
-import { clampPosition, pointInBounds } from './utils/geometry'
+import { clampPosition, rectsIntersect } from './utils/geometry'
 import { COLORS, STORAGE_KEY } from './constants'
 import type { Note, Rect } from './types'
 
@@ -37,9 +37,9 @@ function App() {
     setNotes((prev) => prev.map((note) => (note.id === id ? { ...note, z } : note)))
   }, [])
 
-  const handleDragMove = useCallback((point: { x: number; y: number }) => {
-    const bounds = trashZoneRef.current?.getBoundingClientRect()
-    const isOver = bounds ? pointInBounds(point, bounds) : false
+  const handleDragMove = useCallback((rect: Rect) => {
+    const trashRect = trashZoneRef.current?.getBoundingClientRect()
+    const isOver = trashRect ? rectsIntersect(rect, trashRect) : false
     if (isOver !== isOverTrashRef.current) {
       isOverTrashRef.current = isOver
       setIsTrashActive(isOver)

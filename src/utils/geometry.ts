@@ -51,15 +51,3 @@ export function rectsIntersect(a: Rect, b: Rect): boolean {
 export function rectCenter(rect: Rect): { x: number; y: number } {
   return { x: rect.x + rect.width / 2, y: rect.y + rect.height / 2 }
 }
-
-export function pointInBounds(
-  point: { x: number; y: number },
-  bounds: { left: number; top: number; right: number; bottom: number },
-): boolean {
-  return (
-    point.x >= bounds.left &&
-    point.x <= bounds.right &&
-    point.y >= bounds.top &&
-    point.y <= bounds.bottom
-  )
-}

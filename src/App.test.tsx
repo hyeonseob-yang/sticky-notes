@@ -11,10 +11,28 @@ function mockGetBoundingClientRect() {
   vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockImplementation(function (
     this: HTMLElement,
   ) {
-    const isTrash = this.dataset.testid === 'trash-zone'
-    const rect = isTrash
-      ? { ...TRASH_BOUNDS, width: 100, height: 100 }
-      : { left: 0, top: 0, right: 0, bottom: 0, width: 0, height: 0 }
+    if (this.dataset.testid === 'trash-zone') {
+      const rect = { ...TRASH_BOUNDS, width: 100, height: 100 }
+      return { ...rect, x: rect.left, y: rect.top, toJSON: () => rect } as DOMRect
+    }
+
+    if (this.dataset.testid === 'note-card') {
+      // Simulate real layout: base position/size from inline style, plus any
+      // live `transform: translate(...)` NoteCard applies during a drag.
+      const left = parseFloat(this.style.left) || 0
+      const top = parseFloat(this.style.top) || 0
+      const width = parseFloat(this.style.width) || 0
+      const height = parseFloat(this.style.height) || 0
+      const match = /translate\(([-\d.]+)px,\s*([-\d.]+)px\)/.exec(this.style.transform)
+      const dx = match ? parseFloat(match[1]) : 0
+      const dy = match ? parseFloat(match[2]) : 0
+      const x = left + dx
+      const y = top + dy
+      const rect = { left: x, top: y, right: x + width, bottom: y + height, width, height }
+      return { ...rect, x, y, toJSON: () => rect } as DOMRect
+    }
+
+    const rect = { left: 0, top: 0, right: 0, bottom: 0, width: 0, height: 0 }
     return { ...rect, x: rect.left, y: rect.top, toJSON: () => rect } as DOMRect
   })
 }
@@ -66,7 +84,37 @@ describe('App', () => {
     expect(screen.getByTestId('note-card')).toBeInTheDocument()
   })
 
-  it('clamps a note to the viewport when dragged past the bottom-right edge', () => {
+  it('clamps a note to the viewport when dragged past the right edge', () => {
+    render(<App />)
+    createNoteViaDrag(50, 50, 250, 230)
+    const card = screen.getByTestId('note-card')
+
+    // Only x overflows; y stays well clear of the trash zone's mock bounds
+    // (900-1000, 700-800) so this test isolates clamping from trash deletion.
+    fireEvent.pointerDown(card, { clientX: 100, clientY: 100, pointerId: POINTER_ID })
+    fireEvent.pointerMove(window, { clientX: 2100, clientY: 150, pointerId: POINTER_ID })
+    fireEvent.pointerUp(window, { clientX: 2100, clientY: 150, pointerId: POINTER_ID })
+
+    expect(card.style.left).toBe(`${window.innerWidth - 200}px`)
+    expect(card.style.top).toBe('100px')
+  })
+
+  it('clamps a note to the viewport when dragged past the bottom edge', () => {
+    render(<App />)
+    createNoteViaDrag(50, 50, 250, 230)
+    const card = screen.getByTestId('note-card')
+
+    // Only y overflows; x stays well clear of the trash zone's mock bounds
+    // (900-1000, 700-800) so this test isolates clamping from trash deletion.
+    fireEvent.pointerDown(card, { clientX: 100, clientY: 100, pointerId: POINTER_ID })
+    fireEvent.pointerMove(window, { clientX: 150, clientY: 2100, pointerId: POINTER_ID })
+    fireEvent.pointerUp(window, { clientX: 150, clientY: 2100, pointerId: POINTER_ID })
+
+    expect(card.style.left).toBe('100px')
+    expect(card.style.top).toBe(`${window.innerHeight - 180}px`)
+  })
+
+  it('deletes a note that gets clamped into the corner where the trash zone lives', () => {
     render(<App />)
     createNoteViaDrag(50, 50, 250, 230)
     const card = screen.getByTestId('note-card')
@@ -75,8 +123,7 @@ describe('App', () => {
     fireEvent.pointerMove(window, { clientX: 2100, clientY: 2100, pointerId: POINTER_ID })
     fireEvent.pointerUp(window, { clientX: 2100, clientY: 2100, pointerId: POINTER_ID })
 
-    expect(card.style.left).toBe(`${window.innerWidth - 200}px`)
-    expect(card.style.top).toBe(`${window.innerHeight - 180}px`)
+    expect(screen.queryByTestId('note-card')).not.toBeInTheDocument()
   })
 
   it('clamps a note to the viewport when dragged past the top-left edge', () => {

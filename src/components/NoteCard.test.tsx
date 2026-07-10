@@ -157,14 +157,26 @@ describe('NoteCard', () => {
       expect(card.style.transform).toBe('translate(124px, 88px)')
     })
 
-    it('reports the live pointer position via onDragMove while dragging', () => {
+    it('reports its live bounding rect via onDragMove while dragging', () => {
       const { onDragMove } = renderNoteCard()
       const card = screen.getByTestId('note-card')
+
+      vi.spyOn(card, 'getBoundingClientRect').mockReturnValue({
+        x: 130,
+        y: 110,
+        width: 200,
+        height: 180,
+        left: 130,
+        top: 110,
+        right: 330,
+        bottom: 290,
+        toJSON: () => {},
+      } as DOMRect)
 
       fireEvent.pointerDown(card, { clientX: 0, clientY: 0, pointerId: POINTER_ID })
       fireEvent.pointerMove(window, { clientX: 30, clientY: 10, pointerId: POINTER_ID })
 
-      expect(onDragMove).toHaveBeenCalledWith({ x: 30, y: 10 })
+      expect(onDragMove).toHaveBeenCalledWith({ x: 130, y: 110, width: 200, height: 180 })
     })
   })
 
