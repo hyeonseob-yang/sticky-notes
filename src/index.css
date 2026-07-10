@@ -2,6 +2,7 @@
   --bg: #f4f1ea;
   --text: #1f2028;
   --border: #d8d3c4;
+  --surface: #fff;
   --accent: #aa3bff;
   --accent-contrast: #fff;
 
@@ -20,6 +21,7 @@
     --bg: #1c1b22;
     --text: #f3f4f6;
     --border: #38363f;
+    --surface: #34323c;
   }
 }
 
@@ -125,9 +127,10 @@ body {
   justify-content: center;
   border: 2px solid var(--border);
   border-radius: 50%;
-  background: var(--bg);
+  background: var(--surface);
   color: var(--text);
   font-size: 28px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
   transition:
     transform 0.1s ease,
     border-color 0.1s ease,
