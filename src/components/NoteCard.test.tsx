@@ -82,6 +82,15 @@ describe('NoteCard', () => {
 
       expect(onCommitText).not.toHaveBeenCalled()
     })
+
+    it('does not commit on blur when the text is unchanged', () => {
+      const { onCommitText } = renderNoteCard({ text: 'Buy milk' })
+
+      fireEvent.doubleClick(screen.getByTestId('note-card'))
+      fireEvent.blur(screen.getByRole('textbox'))
+
+      expect(onCommitText).not.toHaveBeenCalled()
+    })
   })
 
   describe('bring to front', () => {

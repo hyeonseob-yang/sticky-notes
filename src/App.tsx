@@ -65,8 +65,13 @@ function App() {
   }, [])
 
   const handleActivate = useCallback((id: string) => {
-    const z = nextZ.current++
-    setNotes((prev) => prev.map((note) => (note.id === id ? { ...note, z } : note)))
+    setNotes((prev) => {
+      const maxZ = prev.reduce((max, note) => Math.max(max, note.z), 0)
+      const target = prev.find((note) => note.id === id)
+      if (!target || target.z === maxZ) return prev
+      const z = nextZ.current++
+      return prev.map((note) => (note.id === id ? { ...note, z } : note))
+    })
   }, [])
 
   const handleDragMove = useCallback((rect: Rect) => {

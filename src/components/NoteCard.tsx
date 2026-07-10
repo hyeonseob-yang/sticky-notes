@@ -95,7 +95,9 @@ export function NoteCard({
 
   const handleBlur = (event: FocusEvent<HTMLTextAreaElement>) => {
     setIsEditing(false)
-    onCommitText(note.id, event.target.value)
+    if (event.target.value !== note.text) {
+      onCommitText(note.id, event.target.value)
+    }
   }
 
   return (

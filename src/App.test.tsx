@@ -200,6 +200,51 @@ describe('App', () => {
       expect(screen.queryByTestId('save-status')).not.toBeInTheDocument()
     })
 
+    it('does not attempt a save from opening and closing edit mode without changing the text', async () => {
+      render(<App />)
+      createNoteViaDrag(50, 50, 250, 230)
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(SAVE_DEBOUNCE_MS)
+      })
+      vi.mocked(saveNotes).mockClear()
+
+      const card = screen.getByTestId('note-card')
+      // Simulate a real double-click: two pointerdown/up pairs (each of which
+      // fires the bring-to-front activate handler) plus the dblclick event
+      // React listens to for entering edit mode. `fireEvent.doubleClick`
+      // alone only dispatches mouse events, not pointer events, so it
+      // wouldn't exercise the activate path the way a real browser does.
+      fireEvent.pointerDown(card, { clientX: 60, clientY: 60, pointerId: POINTER_ID })
+      fireEvent.pointerUp(window, { clientX: 60, clientY: 60, pointerId: POINTER_ID })
+      fireEvent.pointerDown(card, { clientX: 60, clientY: 60, pointerId: POINTER_ID })
+      fireEvent.pointerUp(window, { clientX: 60, clientY: 60, pointerId: POINTER_ID })
+      fireEvent.doubleClick(card)
+      fireEvent.blur(screen.getByRole('textbox'))
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(SAVE_DEBOUNCE_MS)
+      })
+
+      expect(saveNotes).not.toHaveBeenCalled()
+    })
+
+    it('does not attempt a save when activating a note that is already on top', async () => {
+      render(<App />)
+      createNoteViaDrag(50, 50, 250, 230)
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(SAVE_DEBOUNCE_MS)
+      })
+      vi.mocked(saveNotes).mockClear()
+
+      const card = screen.getByTestId('note-card')
+      fireEvent.pointerDown(card, { clientX: 60, clientY: 60, pointerId: POINTER_ID })
+      fireEvent.pointerUp(window, { clientX: 60, clientY: 60, pointerId: POINTER_ID })
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(SAVE_DEBOUNCE_MS)
+      })
+
+      expect(saveNotes).not.toHaveBeenCalled()
+    })
+
     it('shows a saving indicator, then a saved confirmation once the save resolves', async () => {
       let resolveSave: () => void = () => {}
       vi.mocked(saveNotes).mockImplementation(
