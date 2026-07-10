@@ -5,8 +5,8 @@
   --surface: #fff;
   --accent: #aa3bff;
   --accent-contrast: #fff;
-  --danger: #e0245e;
-  --danger-contrast: #fff;
+  --trash: #4b4b55;
+  --trash-contrast: #fff;
 
   --note-yellow: #fff3a3;
   --note-pink: #ffd0e0;
@@ -24,7 +24,8 @@
     --text: #f3f4f6;
     --border: #38363f;
     --surface: #34323c;
-    --danger: #fb4570;
+    --trash: #c4c4cc;
+    --trash-contrast: #1c1b22;
   }
 }
 
@@ -129,10 +130,10 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 3px solid var(--danger);
+  border: 3px solid var(--trash);
   border-radius: 50%;
   background: var(--surface);
-  color: var(--danger);
+  color: var(--trash);
   font-size: 34px;
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
   transition:
@@ -143,8 +144,8 @@ body {
 }
 
 .trash-zone--active {
-  border-color: var(--danger);
-  background: var(--danger);
-  color: var(--danger-contrast);
+  border-color: var(--trash);
+  background: var(--trash);
+  color: var(--trash-contrast);
   transform: scale(1.15);
 }
