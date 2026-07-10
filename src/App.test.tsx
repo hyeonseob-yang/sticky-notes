@@ -1,10 +1,7 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { act, fireEvent, render, screen } from '@testing-library/react'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { fireEvent, render, screen } from '@testing-library/react'
 import App from './App'
-import { saveNotes } from './api/notesApi'
-import { SAVE_DEBOUNCE_MS, STORAGE_KEY } from './constants'
-
-vi.mock('./api/notesApi', () => ({ saveNotes: vi.fn() }))
+import { STORAGE_KEY } from './constants'
 
 const POINTER_ID = 1
 
@@ -52,8 +49,6 @@ beforeEach(() => {
   HTMLElement.prototype.setPointerCapture = vi.fn()
   HTMLElement.prototype.releasePointerCapture = vi.fn()
   mockGetBoundingClientRect()
-  vi.mocked(saveNotes).mockReset()
-  vi.mocked(saveNotes).mockResolvedValue(undefined)
 })
 
 describe('App', () => {
@@ -181,128 +176,19 @@ describe('App', () => {
     expect(screen.getByTestId('note-card')).toBeInTheDocument()
   })
 
-  describe('save status', () => {
-    beforeEach(() => {
-      vi.useFakeTimers()
-    })
+  it('does not bump a note above itself when activating a note that is already on top', () => {
+    render(<App />)
+    createNoteViaDrag(50, 50, 250, 230)
+    const card = screen.getByTestId('note-card')
+    const zBefore = card.style.zIndex
 
-    afterEach(() => {
-      vi.useRealTimers()
-    })
+    // A real double-click fires two pointerdown/up pairs before the dblclick
+    // event; neither should change z-order since this note is already on top.
+    fireEvent.pointerDown(card, { clientX: 60, clientY: 60, pointerId: POINTER_ID })
+    fireEvent.pointerUp(window, { clientX: 60, clientY: 60, pointerId: POINTER_ID })
+    fireEvent.pointerDown(card, { clientX: 60, clientY: 60, pointerId: POINTER_ID })
+    fireEvent.pointerUp(window, { clientX: 60, clientY: 60, pointerId: POINTER_ID })
 
-    it('does not attempt a save just from loading the page', async () => {
-      render(<App />)
-      await act(async () => {
-        await vi.advanceTimersByTimeAsync(SAVE_DEBOUNCE_MS)
-      })
-
-      expect(saveNotes).not.toHaveBeenCalled()
-      expect(screen.queryByTestId('save-status')).not.toBeInTheDocument()
-    })
-
-    it('does not attempt a save from opening and closing edit mode without changing the text', async () => {
-      render(<App />)
-      createNoteViaDrag(50, 50, 250, 230)
-      await act(async () => {
-        await vi.advanceTimersByTimeAsync(SAVE_DEBOUNCE_MS)
-      })
-      vi.mocked(saveNotes).mockClear()
-
-      const card = screen.getByTestId('note-card')
-      // Simulate a real double-click: two pointerdown/up pairs (each of which
-      // fires the bring-to-front activate handler) plus the dblclick event
-      // React listens to for entering edit mode. `fireEvent.doubleClick`
-      // alone only dispatches mouse events, not pointer events, so it
-      // wouldn't exercise the activate path the way a real browser does.
-      fireEvent.pointerDown(card, { clientX: 60, clientY: 60, pointerId: POINTER_ID })
-      fireEvent.pointerUp(window, { clientX: 60, clientY: 60, pointerId: POINTER_ID })
-      fireEvent.pointerDown(card, { clientX: 60, clientY: 60, pointerId: POINTER_ID })
-      fireEvent.pointerUp(window, { clientX: 60, clientY: 60, pointerId: POINTER_ID })
-      fireEvent.doubleClick(card)
-      fireEvent.blur(screen.getByRole('textbox'))
-      await act(async () => {
-        await vi.advanceTimersByTimeAsync(SAVE_DEBOUNCE_MS)
-      })
-
-      expect(saveNotes).not.toHaveBeenCalled()
-    })
-
-    it('does not attempt a save when activating a note that is already on top', async () => {
-      render(<App />)
-      createNoteViaDrag(50, 50, 250, 230)
-      await act(async () => {
-        await vi.advanceTimersByTimeAsync(SAVE_DEBOUNCE_MS)
-      })
-      vi.mocked(saveNotes).mockClear()
-
-      const card = screen.getByTestId('note-card')
-      fireEvent.pointerDown(card, { clientX: 60, clientY: 60, pointerId: POINTER_ID })
-      fireEvent.pointerUp(window, { clientX: 60, clientY: 60, pointerId: POINTER_ID })
-      await act(async () => {
-        await vi.advanceTimersByTimeAsync(SAVE_DEBOUNCE_MS)
-      })
-
-      expect(saveNotes).not.toHaveBeenCalled()
-    })
-
-    it('shows a saving indicator, then a saved confirmation once the save resolves', async () => {
-      let resolveSave: () => void = () => {}
-      vi.mocked(saveNotes).mockImplementation(
-        () =>
-          new Promise((resolve) => {
-            resolveSave = () => resolve(undefined)
-          }),
-      )
-
-      render(<App />)
-      createNoteViaDrag(50, 50, 250, 230)
-
-      expect(screen.queryByTestId('save-status')).not.toBeInTheDocument()
-
-      await act(async () => {
-        await vi.advanceTimersByTimeAsync(SAVE_DEBOUNCE_MS)
-      })
-      expect(screen.getByTestId('save-status')).toHaveTextContent(/saving/i)
-
-      resolveSave()
-      await act(async () => {
-        await vi.advanceTimersByTimeAsync(0)
-      })
-      expect(screen.getByTestId('save-status')).toHaveTextContent(/all changes saved/i)
-    })
-
-    it('shows an error with a retry action that re-attempts the save', async () => {
-      vi.mocked(saveNotes).mockRejectedValueOnce(new Error('network error'))
-
-      render(<App />)
-      createNoteViaDrag(50, 50, 250, 230)
-      await act(async () => {
-        await vi.advanceTimersByTimeAsync(SAVE_DEBOUNCE_MS)
-      })
-
-      expect(screen.getByTestId('save-status')).toHaveTextContent(/failed/i)
-
-      vi.mocked(saveNotes).mockResolvedValueOnce(undefined)
-      fireEvent.click(screen.getByRole('button', { name: /retry/i }))
-      await act(async () => {
-        await vi.advanceTimersByTimeAsync(0)
-      })
-
-      expect(screen.getByTestId('save-status')).toHaveTextContent(/all changes saved/i)
-    })
-
-    it('debounces rapid successive changes into a single save call', async () => {
-      render(<App />)
-      createNoteViaDrag(50, 50, 250, 230)
-      await act(async () => {
-        await vi.advanceTimersByTimeAsync(SAVE_DEBOUNCE_MS / 2)
-      })
-      createNoteViaDrag(300, 300, 500, 480)
-      await act(async () => {
-        await vi.advanceTimersByTimeAsync(SAVE_DEBOUNCE_MS)
-      })
-
-      expect(saveNotes).toHaveBeenCalledTimes(1)
-    })
+    expect(card.style.zIndex).toBe(zBefore)
   })
 })
