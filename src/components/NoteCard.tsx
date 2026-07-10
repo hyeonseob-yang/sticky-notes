@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import type { ChangeEvent, FocusEvent, PointerEvent as ReactPointerEvent } from 'react'
 import { useDrag } from '../hooks/useDrag'
 import { clampRectMinSize } from '../utils/geometry'
@@ -11,19 +11,48 @@ export interface NoteCardProps {
   onMove: (id: string, position: { x: number; y: number }) => void
   onResize: (id: string, size: { width: number; height: number }) => void
   onCommitText: (id: string, text: string) => void
+  onDragMove?: (point: { x: number; y: number }) => void
 }
 
-export function NoteCard({ note, onActivate, onMove, onResize, onCommitText }: NoteCardProps) {
+export function NoteCard({
+  note,
+  onActivate,
+  onMove,
+  onResize,
+  onCommitText,
+  onDragMove,
+}: NoteCardProps) {
   const [isEditing, setIsEditing] = useState(false)
   const [draftText, setDraftText] = useState(note.text)
+  const cardRef = useRef<HTMLDivElement>(null)
 
   const moveDrag = useDrag({
+    onDrag: (delta, point) => {
+      if (cardRef.current) {
+        cardRef.current.style.transform = `translate(${delta.dx}px, ${delta.dy}px)`
+      }
+      onDragMove?.(point)
+    },
     onDragEnd: (delta) => {
+      if (cardRef.current) {
+        cardRef.current.style.transform = ''
+      }
       onMove(note.id, { x: note.x + delta.dx, y: note.y + delta.dy })
     },
   })
 
   const resizeDrag = useDrag({
+    onDrag: (delta) => {
+      if (cardRef.current) {
+        const { width, height } = clampRectMinSize(
+          { x: note.x, y: note.y, width: note.width + delta.dx, height: note.height + delta.dy },
+          MIN_WIDTH,
+          MIN_HEIGHT,
+        )
+        cardRef.current.style.width = `${width}px`
+        cardRef.current.style.height = `${height}px`
+      }
+    },
     onDragEnd: (delta) => {
       const { width, height } = clampRectMinSize(
         { x: note.x, y: note.y, width: note.width + delta.dx, height: note.height + delta.dy },
@@ -60,6 +89,7 @@ export function NoteCard({ note, onActivate, onMove, onResize, onCommitText }: N
 
   return (
     <div
+      ref={cardRef}
       data-testid="note-card"
       onPointerDown={handlePointerDown}
       onDoubleClick={handleDoubleClick}

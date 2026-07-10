@@ -26,6 +26,7 @@ interface RenderNoteCardOptions {
   onMove?: NoteCardProps['onMove']
   onResize?: NoteCardProps['onResize']
   onCommitText?: NoteCardProps['onCommitText']
+  onDragMove?: NoteCardProps['onDragMove']
 }
 
 function renderNoteCard(overrides: Partial<Note> = {}, options: RenderNoteCardOptions = {}) {
@@ -33,6 +34,7 @@ function renderNoteCard(overrides: Partial<Note> = {}, options: RenderNoteCardOp
   const onMove = options.onMove ?? vi.fn<NoteCardProps['onMove']>()
   const onResize = options.onResize ?? vi.fn<NoteCardProps['onResize']>()
   const onCommitText = options.onCommitText ?? vi.fn<NoteCardProps['onCommitText']>()
+  const onDragMove = options.onDragMove ?? vi.fn<NonNullable<NoteCardProps['onDragMove']>>()
   render(
     <NoteCard
       note={makeNote(overrides)}
@@ -40,9 +42,10 @@ function renderNoteCard(overrides: Partial<Note> = {}, options: RenderNoteCardOp
       onMove={onMove}
       onResize={onResize}
       onCommitText={onCommitText}
+      onDragMove={onDragMove}
     />,
   )
-  return { onActivate, onMove, onResize, onCommitText }
+  return { onActivate, onMove, onResize, onCommitText, onDragMove }
 }
 
 beforeEach(() => {
@@ -118,6 +121,30 @@ describe('NoteCard', () => {
       fireEvent.pointerUp(window, { clientX: 0, clientY: 0, pointerId: POINTER_ID })
 
       expect(onMove).not.toHaveBeenCalled()
+    })
+
+    it('translates the card live during the drag, then clears the transform on release', () => {
+      renderNoteCard({ x: 100, y: 100 })
+      const card = screen.getByTestId('note-card')
+
+      fireEvent.pointerDown(card, { clientX: 0, clientY: 0, pointerId: POINTER_ID })
+      fireEvent.pointerMove(window, { clientX: 30, clientY: 10, pointerId: POINTER_ID })
+
+      expect(card.style.transform).toBe('translate(30px, 10px)')
+
+      fireEvent.pointerUp(window, { clientX: 30, clientY: 10, pointerId: POINTER_ID })
+
+      expect(card.style.transform).toBe('')
+    })
+
+    it('reports the live pointer position via onDragMove while dragging', () => {
+      const { onDragMove } = renderNoteCard()
+      const card = screen.getByTestId('note-card')
+
+      fireEvent.pointerDown(card, { clientX: 0, clientY: 0, pointerId: POINTER_ID })
+      fireEvent.pointerMove(window, { clientX: 30, clientY: 10, pointerId: POINTER_ID })
+
+      expect(onDragMove).toHaveBeenCalledWith({ x: 30, y: 10 })
     })
   })
 
