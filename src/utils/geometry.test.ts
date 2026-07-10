@@ -3,6 +3,7 @@ import {
   clampPosition,
   clampRectMinSize,
   normalizeRect,
+  pointInBounds,
   rectCenter,
   rectsIntersect,
 } from './geometry'
@@ -118,5 +119,23 @@ describe('rectCenter', () => {
       x: 60,
       y: 45,
     })
+  })
+})
+
+describe('pointInBounds', () => {
+  const bounds = { left: 100, top: 100, right: 200, bottom: 180 }
+
+  it('returns true for a point inside the bounds', () => {
+    expect(pointInBounds({ x: 150, y: 140 }, bounds)).toBe(true)
+  })
+
+  it('returns true for a point exactly on the edge', () => {
+    expect(pointInBounds({ x: 100, y: 100 }, bounds)).toBe(true)
+    expect(pointInBounds({ x: 200, y: 180 }, bounds)).toBe(true)
+  })
+
+  it('returns false for a point outside the bounds', () => {
+    expect(pointInBounds({ x: 50, y: 140 }, bounds)).toBe(false)
+    expect(pointInBounds({ x: 150, y: 300 }, bounds)).toBe(false)
   })
 })
