@@ -2,8 +2,11 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { Canvas } from './components/Canvas'
 import { NoteCard } from './components/NoteCard'
 import { TrashZone } from './components/TrashZone'
+import { SaveStatus } from './components/SaveStatus'
+import type { SaveState } from './components/SaveStatus'
+import { saveNotes } from './api/notesApi'
 import { clampPosition, rectsIntersect } from './utils/geometry'
-import { COLORS, STORAGE_KEY } from './constants'
+import { COLORS, SAVE_DEBOUNCE_MS, STORAGE_KEY } from './constants'
 import type { Note, Rect } from './types'
 
 function loadNotes(): Note[] {
@@ -21,10 +24,39 @@ function App() {
   const trashZoneRef = useRef<HTMLDivElement>(null)
   const isOverTrashRef = useRef(false)
   const [isTrashActive, setIsTrashActive] = useState(false)
+  const [saveStatus, setSaveStatus] = useState<SaveState>('idle')
+  const saveRequestIdRef = useRef(0)
+  const isFirstRenderRef = useRef(true)
 
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(notes))
   }, [notes])
+
+  const performSave = useCallback((notesToSave: Note[]) => {
+    const requestId = ++saveRequestIdRef.current
+    setSaveStatus('saving')
+    saveNotes(notesToSave).then(
+      () => {
+        if (saveRequestIdRef.current === requestId) setSaveStatus('saved')
+      },
+      () => {
+        if (saveRequestIdRef.current === requestId) setSaveStatus('error')
+      },
+    )
+  }, [])
+
+  useEffect(() => {
+    if (isFirstRenderRef.current) {
+      isFirstRenderRef.current = false
+      return
+    }
+    const timeoutId = setTimeout(() => performSave(notes), SAVE_DEBOUNCE_MS)
+    return () => clearTimeout(timeoutId)
+  }, [notes, performSave])
+
+  const handleRetrySave = useCallback(() => {
+    performSave(notes)
+  }, [notes, performSave])
 
   const handleCreateNote = useCallback((rect: Rect) => {
     const z = nextZ.current++
@@ -89,6 +121,7 @@ function App() {
         ))}
       </Canvas>
       <TrashZone ref={trashZoneRef} isActive={isTrashActive} />
+      <SaveStatus status={saveStatus} onRetry={handleRetrySave} />
     </main>
   )
 }
