@@ -15,6 +15,43 @@ beforeEach(() => {
 })
 
 describe('useDrag', () => {
+  it('ignores a right-click, never starting a drag even past the threshold', () => {
+    const onDragStart = vi.fn()
+    const onDrag = vi.fn()
+    const { getByTestId } = render(
+      <DragTarget threshold={4} onDragStart={onDragStart} onDrag={onDrag} />,
+    )
+    const target = getByTestId('target')
+
+    fireEvent.pointerDown(target, {
+      clientX: 100,
+      clientY: 100,
+      pointerId: POINTER_ID,
+      button: 2,
+    })
+    fireEvent.pointerMove(window, { clientX: 200, clientY: 200, pointerId: POINTER_ID })
+
+    expect(onDragStart).not.toHaveBeenCalled()
+    expect(onDrag).not.toHaveBeenCalled()
+    expect(target.setPointerCapture).not.toHaveBeenCalled()
+  })
+
+  it('ignores a middle-click', () => {
+    const onDragStart = vi.fn()
+    const { getByTestId } = render(<DragTarget threshold={4} onDragStart={onDragStart} />)
+    const target = getByTestId('target')
+
+    fireEvent.pointerDown(target, {
+      clientX: 100,
+      clientY: 100,
+      pointerId: POINTER_ID,
+      button: 1,
+    })
+    fireEvent.pointerMove(window, { clientX: 200, clientY: 200, pointerId: POINTER_ID })
+
+    expect(onDragStart).not.toHaveBeenCalled()
+  })
+
   it('does not start a drag while movement stays under the threshold', () => {
     const onDragStart = vi.fn()
     const onDrag = vi.fn()

@@ -36,6 +36,8 @@ export function useDrag(options: UseDragOptions): DragHandlers {
   }, [])
 
   const onPointerDown = useCallback((event: ReactPointerEvent<HTMLElement>) => {
+    if (event.button !== 0) return
+
     const target = event.currentTarget
     const pointerId = event.pointerId
     const startX = event.clientX
