@@ -53,9 +53,10 @@ responsiveness, `NoteCard` mutates its own DOM node directly (via a ref) to
 show live movement/resizing during a drag, and only commits the final
 position or size back into React state once the drag ends — this avoids a
 re-render of the whole note list on every pointer-move event. Trash-zone
-deletion works by comparing the live pointer position against the trash
-zone's bounding rect during a move; the note is deleted instead of
-repositioned if it's released while over the trash.
+deletion works by comparing the note's own live bounding rect (read via
+`getBoundingClientRect`, which reflects the in-progress transform) against
+the trash zone's rect during a move; the note is deleted instead of
+repositioned if the two rects overlap when it's released.
 
 Pure geometry logic (normalizing a drag into a rect, clamping to a minimum
 size, clamping to bounds, rect/point intersection tests) lives in
@@ -66,10 +67,12 @@ size, clamping to bounds, rect/point intersection tests) lives in
 - **Hand-rolled dragging over a library**: the task explicitly asks for this,
   and a single `useDrag` hook covering create/move/resize kept the three
   interactions consistent rather than each being bespoke.
-- **Trash hit-testing by pointer position, not full rect intersection**:
-  simpler to reason about and implement correctly, and matches how a user
-  actually judges "is this over the trash" — by where the cursor is, not by
-  the note's full bounding box.
+- **Trash hit-testing by rect intersection, not pointer position**: the task
+  says "dragging it over" the trash zone, which reads as the note's own
+  extent overlapping the zone, not just the cursor. One consequence: a note
+  clamped into the same corner the trash zone occupies is deleted even if
+  the exact point you grabbed never crosses into the trash icon itself —
+  that's treated as correct, since the note's body genuinely is over it.
 - **Bring-to-front, localStorage persistence, and colors as bonus features**:
   chosen because they meaningfully round out the interaction model without
   large added complexity within the time box; a mocked REST API sync and
