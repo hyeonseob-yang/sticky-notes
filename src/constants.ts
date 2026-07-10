@@ -7,7 +7,7 @@ export const DEFAULT_HEIGHT = 180
 
 // Minimum pointer travel (px) before a create/move drag counts as a drag
 // rather than a click. Prevents accidental note creation and drops.
-export const DRAG_THRESHOLD = 4
+export const DRAG_THRESHOLD = 8
 
 export const COLORS: NoteColor[] = ['yellow', 'pink', 'blue', 'green', 'purple']
 
