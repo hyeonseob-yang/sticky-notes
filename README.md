@@ -33,6 +33,10 @@ npm run lint    # ESLint
 - Notes come in one of five colors, assigned in rotation as they're created.
 - Clicking or dragging a note brings it to the front of the stack.
 - Notes persist to `localStorage` and are restored on page load.
+- Changes also sync to a mocked async REST API (debounced after edits settle),
+  with a status indicator in the top-left corner: saving / all changes saved /
+  failed to save (with a retry action). The mock has a simulated network delay
+  and a random failure rate to exercise all three states honestly.
 
 ## Architecture
 
@@ -62,6 +66,13 @@ Pure geometry logic (normalizing a drag into a rect, clamping to a minimum
 size, clamping to bounds, rect/point intersection tests) lives in
 `src/utils/geometry.ts` and is unit-tested independently of any component.
 
+`src/api/notesApi.ts` mocks a REST save endpoint: an async function with a
+simulated network delay and a random failure rate, exercised by `App` through
+a small state machine (`idle` → `saving` → `saved`/`error`) surfaced by the
+`SaveStatus` component. Saves are debounced after the last change and guarded
+against out-of-order responses (a stale in-flight request finishing late
+can't clobber a newer one) with a monotonically increasing request id.
+
 ## Decisions and trade-offs
 
 - **Hand-rolled dragging over a library**: the task explicitly asks for this,
@@ -73,16 +84,19 @@ size, clamping to bounds, rect/point intersection tests) lives in
   clamped into the same corner the trash zone occupies is deleted even if
   the exact point you grabbed never crosses into the trash icon itself —
   that's treated as correct, since the note's body genuinely is over it.
-- **Bring-to-front, localStorage persistence, and colors as bonus features**:
-  chosen because they meaningfully round out the interaction model without
-  large added complexity within the time box; a mocked REST API sync and
-  full keyboard-driven move/resize were left out.
+- **Bring-to-front, localStorage persistence, colors, and a mocked REST sync
+  as bonus features**: chosen because they meaningfully round out the
+  interaction model without large added complexity within the time box; full
+  keyboard-driven move/resize was left out.
+- **REST sync alongside localStorage, not instead of it**: `localStorage` stays
+  the source of truth for reload (simple and synchronous), while the mocked
+  API save is a separate, purely additive demonstration of handling async
+  save state (loading/success/error) — it doesn't gate anything on the reload
+  path, so a failed "server" save never risks losing local data.
 
 ## What I'd do with more time
 
 - Keyboard support for moving/resizing/deleting notes (currently pointer-only).
 - A color picker on each note instead of colors only being assigned at creation.
-- Debounce the localStorage writes instead of writing on every state change.
-- A mocked async REST API layer (with loading/error states) as an alternative
-  or addition to localStorage persistence.
+- Debounce the localStorage writes the same way the REST sync is debounced.
 - Snapping/alignment guides when moving notes near each other or the canvas edges.
