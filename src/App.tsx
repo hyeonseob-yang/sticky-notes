@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { Canvas } from './components/Canvas'
 import { NoteCard } from './components/NoteCard'
 import { TrashZone } from './components/TrashZone'
-import { pointInBounds } from './utils/geometry'
+import { clampPosition, pointInBounds } from './utils/geometry'
 import { COLORS, STORAGE_KEY } from './constants'
 import type { Note, Rect } from './types'
 
@@ -53,7 +53,16 @@ function App() {
       setNotes((prev) => prev.filter((note) => note.id !== id))
       return
     }
-    setNotes((prev) => prev.map((note) => (note.id === id ? { ...note, ...position } : note)))
+    setNotes((prev) =>
+      prev.map((note) => {
+        if (note.id !== id) return note
+        const clamped = clampPosition(
+          { ...note, ...position },
+          { width: window.innerWidth, height: window.innerHeight },
+        )
+        return { ...note, x: clamped.x, y: clamped.y }
+      }),
+    )
   }, [])
 
   const handleResize = useCallback((id: string, size: { width: number; height: number }) => {

@@ -66,6 +66,32 @@ describe('App', () => {
     expect(screen.getByTestId('note-card')).toBeInTheDocument()
   })
 
+  it('clamps a note to the viewport when dragged past the bottom-right edge', () => {
+    render(<App />)
+    createNoteViaDrag(50, 50, 250, 230)
+    const card = screen.getByTestId('note-card')
+
+    fireEvent.pointerDown(card, { clientX: 100, clientY: 100, pointerId: POINTER_ID })
+    fireEvent.pointerMove(window, { clientX: 2100, clientY: 2100, pointerId: POINTER_ID })
+    fireEvent.pointerUp(window, { clientX: 2100, clientY: 2100, pointerId: POINTER_ID })
+
+    expect(card.style.left).toBe(`${window.innerWidth - 200}px`)
+    expect(card.style.top).toBe(`${window.innerHeight - 180}px`)
+  })
+
+  it('clamps a note to the viewport when dragged past the top-left edge', () => {
+    render(<App />)
+    createNoteViaDrag(50, 50, 250, 230)
+    const card = screen.getByTestId('note-card')
+
+    fireEvent.pointerDown(card, { clientX: 100, clientY: 100, pointerId: POINTER_ID })
+    fireEvent.pointerMove(window, { clientX: -1000, clientY: -1000, pointerId: POINTER_ID })
+    fireEvent.pointerUp(window, { clientX: -1000, clientY: -1000, pointerId: POINTER_ID })
+
+    expect(card.style.left).toBe('0px')
+    expect(card.style.top).toBe('0px')
+  })
+
   it('commits edited text back into the rendered note', () => {
     render(<App />)
     createNoteViaDrag(50, 50, 250, 230)
