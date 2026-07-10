@@ -65,7 +65,7 @@ function App() {
   }, [])
 
   return (
-    <div className="app">
+    <main className="app">
       <Canvas onCreateNote={handleCreateNote}>
         {notes.map((note) => (
           <NoteCard
@@ -80,7 +80,7 @@ function App() {
         ))}
       </Canvas>
       <TrashZone ref={trashZoneRef} isActive={isTrashActive} />
-    </div>
+    </main>
   )
 }
 

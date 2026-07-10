@@ -43,7 +43,14 @@ export function Canvas({ onCreateNote, children }: CanvasProps) {
   }
 
   return (
-    <div ref={canvasRef} data-testid="canvas" className="canvas" onPointerDown={handlePointerDown}>
+    <div
+      ref={canvasRef}
+      data-testid="canvas"
+      className="canvas"
+      role="region"
+      aria-label="Sticky notes canvas. Click and drag to create a note."
+      onPointerDown={handlePointerDown}
+    >
       {children}
       {previewRect && (
         <div

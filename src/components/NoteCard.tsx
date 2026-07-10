@@ -91,6 +91,9 @@ export function NoteCard({
     <div
       ref={cardRef}
       data-testid="note-card"
+      className="note-card"
+      role="group"
+      aria-label={note.text ? `Sticky note: ${note.text}` : 'Sticky note, empty'}
       onPointerDown={handlePointerDown}
       onDoubleClick={handleDoubleClick}
       style={{
@@ -104,11 +107,23 @@ export function NoteCard({
       }}
     >
       {isEditing ? (
-        <textarea autoFocus value={draftText} onChange={handleDraftChange} onBlur={handleBlur} />
+        <textarea
+          autoFocus
+          className="note-card__textarea"
+          aria-label="Note text"
+          value={draftText}
+          onChange={handleDraftChange}
+          onBlur={handleBlur}
+        />
       ) : (
-        <p>{note.text}</p>
+        <p className="note-card__text">{note.text}</p>
       )}
-      <div data-testid="resize-handle" onPointerDown={handleResizePointerDown} />
+      <div
+        data-testid="resize-handle"
+        className="note-card__resize-handle"
+        aria-label="Resize note"
+        onPointerDown={handleResizePointerDown}
+      />
     </div>
   )
 }
