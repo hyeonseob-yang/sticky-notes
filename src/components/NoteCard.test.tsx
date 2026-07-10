@@ -27,6 +27,7 @@ interface RenderNoteCardOptions {
   onResize?: NoteCardProps['onResize']
   onCommitText?: NoteCardProps['onCommitText']
   onDragMove?: NoteCardProps['onDragMove']
+  onDragStart?: NoteCardProps['onDragStart']
 }
 
 function renderNoteCard(overrides: Partial<Note> = {}, options: RenderNoteCardOptions = {}) {
@@ -35,6 +36,7 @@ function renderNoteCard(overrides: Partial<Note> = {}, options: RenderNoteCardOp
   const onResize = options.onResize ?? vi.fn<NoteCardProps['onResize']>()
   const onCommitText = options.onCommitText ?? vi.fn<NoteCardProps['onCommitText']>()
   const onDragMove = options.onDragMove ?? vi.fn<NonNullable<NoteCardProps['onDragMove']>>()
+  const onDragStart = options.onDragStart ?? vi.fn<NonNullable<NoteCardProps['onDragStart']>>()
   render(
     <NoteCard
       note={makeNote(overrides)}
@@ -43,9 +45,10 @@ function renderNoteCard(overrides: Partial<Note> = {}, options: RenderNoteCardOp
       onResize={onResize}
       onCommitText={onCommitText}
       onDragMove={onDragMove}
+      onDragStart={onDragStart}
     />,
   )
-  return { onActivate, onMove, onResize, onCommitText, onDragMove }
+  return { onActivate, onMove, onResize, onCommitText, onDragMove, onDragStart }
 }
 
 beforeEach(() => {
@@ -111,6 +114,19 @@ describe('NoteCard', () => {
 
       expect(onMove).toHaveBeenCalledTimes(1)
       expect(onMove).toHaveBeenCalledWith('note-1', { x: 130, y: 110 })
+    })
+
+    it('calls onDragStart once movement crosses the threshold, not on a plain click', () => {
+      const { onDragStart } = renderNoteCard()
+      const card = screen.getByTestId('note-card')
+
+      fireEvent.pointerDown(card, { clientX: 0, clientY: 0, pointerId: POINTER_ID })
+      fireEvent.pointerUp(window, { clientX: 0, clientY: 0, pointerId: POINTER_ID })
+      expect(onDragStart).not.toHaveBeenCalled()
+
+      fireEvent.pointerDown(card, { clientX: 0, clientY: 0, pointerId: POINTER_ID })
+      fireEvent.pointerMove(window, { clientX: 30, clientY: 10, pointerId: POINTER_ID })
+      expect(onDragStart).toHaveBeenCalledTimes(1)
     })
 
     it('does not call onMove for a plain click with no movement', () => {

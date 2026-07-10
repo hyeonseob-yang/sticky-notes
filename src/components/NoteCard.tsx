@@ -12,6 +12,7 @@ export interface NoteCardProps {
   onResize: (id: string, size: { width: number; height: number }) => void
   onCommitText: (id: string, text: string) => void
   onDragMove?: (point: { x: number; y: number }) => void
+  onDragStart?: () => void
 }
 
 export function NoteCard({
@@ -21,12 +22,16 @@ export function NoteCard({
   onResize,
   onCommitText,
   onDragMove,
+  onDragStart,
 }: NoteCardProps) {
   const [isEditing, setIsEditing] = useState(false)
   const [draftText, setDraftText] = useState(note.text)
   const cardRef = useRef<HTMLDivElement>(null)
 
   const moveDrag = useDrag({
+    onDragStart: () => {
+      onDragStart?.()
+    },
     onDrag: (delta, point) => {
       if (cardRef.current) {
         const clamped = clampPosition(

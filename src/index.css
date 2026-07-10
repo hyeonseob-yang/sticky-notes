@@ -132,10 +132,19 @@ body {
   color: var(--text);
   font-size: 28px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  opacity: 0;
+  transform: scale(0.6);
+  pointer-events: none;
   transition:
-    transform 0.1s ease,
+    opacity 0.15s ease,
+    transform 0.15s ease,
     border-color 0.1s ease,
     background 0.1s ease;
+}
+
+.trash-zone--visible {
+  opacity: 1;
+  transform: scale(1);
 }
 
 .trash-zone--active {
