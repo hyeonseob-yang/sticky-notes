@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { fireEvent, render, screen } from '@testing-library/react'
 import { NoteCard } from './NoteCard'
 import type { NoteCardProps } from './NoteCard'
@@ -81,72 +81,6 @@ describe('NoteCard', () => {
       fireEvent.change(screen.getByRole('textbox'), { target: { value: 'still typing' } })
 
       expect(onCommitText).not.toHaveBeenCalled()
-    })
-  })
-
-  describe('auto-grow while editing', () => {
-    afterEach(() => {
-      Reflect.deleteProperty(HTMLTextAreaElement.prototype, 'scrollHeight')
-    })
-
-    function mockScrollHeight(initial: number) {
-      let value = initial
-      Object.defineProperty(HTMLTextAreaElement.prototype, 'scrollHeight', {
-        configurable: true,
-        get: () => value,
-      })
-      return (next: number) => {
-        value = next
-      }
-    }
-
-    it('grows the note height while editing when content overflows the current size', () => {
-      const setScrollHeight = mockScrollHeight(150)
-      renderNoteCard({ height: 150 })
-      const card = screen.getByTestId('note-card')
-
-      fireEvent.doubleClick(card)
-      setScrollHeight(320)
-      fireEvent.change(screen.getByRole('textbox'), { target: { value: 'a lot of text' } })
-
-      expect(card.style.height).toBe('320px')
-    })
-
-    it('never shrinks the note below its manually set height while editing', () => {
-      mockScrollHeight(80)
-      renderNoteCard({ height: 150 })
-      const card = screen.getByTestId('note-card')
-
-      fireEvent.doubleClick(card)
-      fireEvent.change(screen.getByRole('textbox'), { target: { value: 'x' } })
-
-      expect(card.style.height).toBe('150px')
-    })
-
-    it('commits the grown height via onResize once editing ends', () => {
-      const setScrollHeight = mockScrollHeight(150)
-      const { onResize } = renderNoteCard({ width: 200, height: 150 })
-      const card = screen.getByTestId('note-card')
-
-      fireEvent.doubleClick(card)
-      setScrollHeight(300)
-      const textbox = screen.getByRole('textbox')
-      fireEvent.change(textbox, { target: { value: 'a lot of text' } })
-      fireEvent.blur(textbox)
-
-      expect(onResize).toHaveBeenCalledWith('note-1', { width: 200, height: 300 })
-    })
-
-    it('does not call onResize on blur if the note never grew', () => {
-      const { onResize } = renderNoteCard({ height: 150 })
-      const card = screen.getByTestId('note-card')
-
-      fireEvent.doubleClick(card)
-      const textbox = screen.getByRole('textbox')
-      fireEvent.change(textbox, { target: { value: 'short' } })
-      fireEvent.blur(textbox)
-
-      expect(onResize).not.toHaveBeenCalled()
     })
   })
 

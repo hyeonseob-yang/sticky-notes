@@ -1,4 +1,4 @@
-import { useLayoutEffect, useRef, useState } from 'react'
+import { useRef, useState } from 'react'
 import type { ChangeEvent, FocusEvent, PointerEvent as ReactPointerEvent } from 'react'
 import { useDrag } from '../hooks/useDrag'
 import { clampPosition, clampRectMinSize } from '../utils/geometry'
@@ -24,16 +24,7 @@ export function NoteCard({
 }: NoteCardProps) {
   const [isEditing, setIsEditing] = useState(false)
   const [draftText, setDraftText] = useState(note.text)
-  const [editHeight, setEditHeight] = useState(note.height)
   const cardRef = useRef<HTMLDivElement>(null)
-  const textareaRef = useRef<HTMLTextAreaElement>(null)
-
-  useLayoutEffect(() => {
-    if (!isEditing) return
-    const textarea = textareaRef.current
-    if (!textarea) return
-    setEditHeight(Math.max(note.height, textarea.scrollHeight))
-  }, [draftText, isEditing, note.height])
 
   const moveDrag = useDrag({
     onDrag: (delta, point) => {
@@ -88,7 +79,6 @@ export function NoteCard({
 
   const handleDoubleClick = () => {
     setDraftText(note.text)
-    setEditHeight(note.height)
     setIsEditing(true)
   }
 
@@ -99,9 +89,6 @@ export function NoteCard({
   const handleBlur = (event: FocusEvent<HTMLTextAreaElement>) => {
     setIsEditing(false)
     onCommitText(note.id, event.target.value)
-    if (editHeight !== note.height) {
-      onResize(note.id, { width: note.width, height: editHeight })
-    }
   }
 
   return (
@@ -118,14 +105,13 @@ export function NoteCard({
         left: note.x,
         top: note.y,
         width: note.width,
-        height: isEditing ? editHeight : note.height,
+        height: note.height,
         zIndex: note.z,
         backgroundColor: `var(--note-${note.color})`,
       }}
     >
       {isEditing ? (
         <textarea
-          ref={textareaRef}
           autoFocus
           className="note-card__textarea"
           aria-label="Note text"
