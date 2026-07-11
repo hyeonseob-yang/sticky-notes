@@ -32,8 +32,9 @@ npm run lint    # ESLint
 - Edit a note's text by double-clicking it and clicking away (or tabbing) to commit.
 - Notes come in one of five colors, assigned in rotation as they're created.
 - Clicking or dragging a note brings it to the front of the stack.
-- Notes stay within the visible canvas — dragging one past an edge clamps it
-  to the viewport instead of letting it move off-screen.
+- Notes always stay within the visible canvas: creating, moving, or resizing
+  one near an edge clamps it to the viewport instead of letting it move,
+  spawn, or grow off-screen.
 - Notes persist to `localStorage` and are restored on page load.
 
 ## Architecture
