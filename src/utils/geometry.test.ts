@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import {
   clampPosition,
+  clampRectMaxSize,
   clampRectMinSize,
   clampSizeToBounds,
   normalizeRect,
@@ -49,6 +50,25 @@ describe('clampRectMinSize', () => {
       y: 5,
       width: 140,
       height: 120,
+    })
+  })
+})
+
+describe('clampRectMaxSize', () => {
+  const bounds = { width: 1000, height: 800 }
+
+  it('leaves a rect unchanged when already within bounds', () => {
+    const rect = { x: 5, y: 5, width: 200, height: 150 }
+    expect(clampRectMaxSize(rect, bounds)).toEqual(rect)
+  })
+
+  it('shrinks width and height that exceed the bounds, regardless of origin', () => {
+    const rect = { x: 20, y: 30, width: 1980, height: 900 }
+    expect(clampRectMaxSize(rect, bounds)).toEqual({
+      x: 20,
+      y: 30,
+      width: 1000,
+      height: 800,
     })
   })
 })

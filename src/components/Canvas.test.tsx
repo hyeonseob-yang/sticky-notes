@@ -66,6 +66,23 @@ describe('Canvas', () => {
     })
   })
 
+  it('caps a note wider or taller than the viewport instead of letting it overflow', () => {
+    const onCreateNote = vi.fn()
+    render(<Canvas onCreateNote={onCreateNote} />)
+    const canvas = screen.getByTestId('canvas')
+
+    fireEvent.pointerDown(canvas, { clientX: 20, clientY: 300, pointerId: POINTER_ID })
+    fireEvent.pointerMove(window, { clientX: 2000, clientY: 500, pointerId: POINTER_ID })
+    fireEvent.pointerUp(window, { clientX: 2000, clientY: 500, pointerId: POINTER_ID })
+
+    expect(onCreateNote).toHaveBeenCalledWith({
+      x: 0,
+      y: 300,
+      width: window.innerWidth,
+      height: 200,
+    })
+  })
+
   it('ignores drags that originate on a child element', () => {
     const onCreateNote = vi.fn()
     render(

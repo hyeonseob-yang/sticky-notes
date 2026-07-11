@@ -26,6 +26,17 @@ export function clampRectMinSize(
   }
 }
 
+export function clampRectMaxSize(
+  rect: Rect,
+  bounds: { width: number; height: number },
+): Rect {
+  return {
+    ...rect,
+    width: Math.min(rect.width, bounds.width),
+    height: Math.min(rect.height, bounds.height),
+  }
+}
+
 export function clampPosition(
   rect: Rect,
   bounds: { width: number; height: number },
