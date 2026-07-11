@@ -55,15 +55,19 @@ threshold, and reports deltas relative to the drag's start point. For
 responsiveness, `NoteCard` mutates its own DOM node directly (via a ref) to
 show live movement/resizing during a drag, and only commits the final
 position or size back into React state once the drag ends — this avoids a
-re-render of the whole note list on every pointer-move event. Trash-zone
-deletion works by comparing the note's own live bounding rect (read via
-`getBoundingClientRect`, which reflects the in-progress transform) against
-the trash zone's rect during a move; the note is deleted instead of
-repositioned if the two rects overlap when it's released.
+re-render of the whole note list on every pointer-move event. The same
+viewport clamping applies to that live preview as to the final commit, so a
+note never visually leaves the viewport mid-drag only to snap back at the
+end. Trash-zone deletion works by comparing the note's own live bounding
+rect (read via `getBoundingClientRect`, which reflects the in-progress
+transform) against the trash zone's rect during a move; the note is deleted
+instead of repositioned if the two rects overlap when it's released.
 
-Pure geometry logic (normalizing a drag into a rect, clamping to a minimum
-size, clamping to bounds, rect intersection tests) lives in
-`src/utils/geometry.ts` and is unit-tested independently of any component.
+Pure geometry logic lives in `src/utils/geometry.ts` and is unit-tested
+independently of any component: normalizing a drag into a rect, flooring it
+to a minimum size, capping it to a maximum size, clamping a rect's position
+to fit within bounds, clamping a rect's size to fit within bounds from a
+fixed origin, and rect intersection tests.
 
 ## Decisions and trade-offs
 
@@ -76,6 +80,13 @@ size, clamping to bounds, rect intersection tests) lives in
   clamped into the same corner the trash zone occupies is deleted even if
   the exact point you grabbed never crosses into the trash icon itself —
   that's treated as correct, since the note's body genuinely is over it.
+- **Two clamping strategies, not one**: create and move can shift a note's
+  origin to keep it on-screen, so they clamp *position* (`clampPosition`).
+  Resize can't — it grows from a fixed top-left corner via the bottom-right
+  handle — so it clamps *size* instead, from that fixed origin
+  (`clampSizeToBounds`). They look similar but solve different constraints;
+  using the wrong one for either interaction would either move a note that
+  should stay put, or fail to prevent it from overflowing.
 - **Fixed note size with internal scroll for overflowing text, not auto-grow**:
   resize is a required core feature, so a note's size should stay exactly what
   you set it to. An auto-grow-while-editing version (floored at the manual
