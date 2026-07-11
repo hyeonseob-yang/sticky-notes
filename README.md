@@ -75,6 +75,13 @@ size, clamping to bounds, rect intersection tests) lives in
   clamped into the same corner the trash zone occupies is deleted even if
   the exact point you grabbed never crosses into the trash icon itself —
   that's treated as correct, since the note's body genuinely is over it.
+- **Fixed note size with internal scroll for overflowing text, not auto-grow**:
+  resize is a required core feature, so a note's size should stay exactly what
+  you set it to. An auto-grow-while-editing version (floored at the manual
+  size) was actually built and tried, but had a real bug — merely opening and
+  closing edit mode on a manually-shrunk note grew it back, even with no edit
+  made — so it was reverted in favor of the simpler, predictable fixed-size
+  behavior rather than spending more of the time box debugging it.
 - **Bring-to-front, localStorage persistence, and colors as bonus features**:
   chosen because they meaningfully round out the interaction model without
   large added complexity within the time box; a mocked REST API sync and
