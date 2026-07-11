@@ -99,3 +99,7 @@ size, clamping to bounds, rect intersection tests) lives in
 - A mocked async REST API layer (with loading/error states) as an alternative
   or addition to localStorage persistence.
 - Snapping/alignment guides when moving notes near each other or the canvas edges.
+- Re-clamp existing notes on window resize. Viewport bounds are read fresh on
+  every create/move/resize, so they're always correct at interaction time,
+  but shrinking the window after a note is already placed near the old edge
+  doesn't retroactively pull it back in — it stays put until next touched.
