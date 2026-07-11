@@ -38,6 +38,8 @@ export function Canvas({ onCreateNote, children }: CanvasProps) {
   })
 
   const handlePointerDown = (event: ReactPointerEvent<HTMLDivElement>) => {
+    // Only start a create-drag when the pointerdown originated on the empty
+    // canvas itself, not a child note (which bubbles up to this handler too).
     if (event.target !== event.currentTarget) return
     drag.onPointerDown(event)
   }

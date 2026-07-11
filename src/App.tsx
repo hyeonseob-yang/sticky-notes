@@ -36,6 +36,8 @@ function App() {
     setNotes((prev) => {
       const maxZ = prev.reduce((max, note) => Math.max(max, note.z), 0)
       const target = prev.find((note) => note.id === id)
+      // Skip the update if this note is already topmost, to avoid an
+      // unnecessary re-render/z-bump (a double-click fires this twice).
       if (!target || target.z === maxZ) return prev
       const z = nextZ.current++
       return prev.map((note) => (note.id === id ? { ...note, z } : note))
@@ -52,6 +54,9 @@ function App() {
   }, [])
 
   const handleMove = useCallback((id: string, position: { x: number; y: number }) => {
+    // isOverTrashRef is kept up to date by handleDragMove during the live
+    // drag; if the note was released while over the trash, delete it
+    // instead of repositioning.
     if (isOverTrashRef.current) {
       isOverTrashRef.current = false
       setIsTrashActive(false)

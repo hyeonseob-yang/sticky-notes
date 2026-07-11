@@ -24,6 +24,9 @@ export interface DragHandlers {
 }
 
 export function useDrag(options: UseDragOptions): DragHandlers {
+  // Kept in sync every render (not read during render) so the long-lived
+  // pointer listeners below always see the latest callbacks/threshold
+  // without needing to recreate onPointerDown or close over stale props.
   const optionsRef = useRef(options)
   useEffect(() => {
     optionsRef.current = options
@@ -31,11 +34,14 @@ export function useDrag(options: UseDragOptions): DragHandlers {
 
   const cleanupRef = useRef<(() => void) | null>(null)
 
+  // Guards against a drag's listeners leaking if the component unmounts
+  // mid-drag; the normal end-of-drag path in handleUp already cleans up.
   useEffect(() => {
     return () => cleanupRef.current?.()
   }, [])
 
   const onPointerDown = useCallback((event: ReactPointerEvent<HTMLElement>) => {
+    // Only the primary (left) button starts a drag.
     if (event.button !== 0) return
 
     const target = event.currentTarget

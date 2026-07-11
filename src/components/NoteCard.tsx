@@ -29,11 +29,16 @@ export function NoteCard({
   const moveDrag = useDrag({
     onDrag: (delta) => {
       if (cardRef.current) {
+        // Clamp the live position too (not just on commit in App) so the
+        // note never visually leaves the viewport mid-drag.
         const clamped = clampPosition(
           { x: note.x + delta.dx, y: note.y + delta.dy, width: note.width, height: note.height },
           { width: window.innerWidth, height: window.innerHeight },
         )
         cardRef.current.style.transform = `translate(${clamped.x - note.x}px, ${clamped.y - note.y}px)`
+        // Read the true on-screen rect right after applying the transform
+        // (forces a synchronous layout) so App can hit-test it against the
+        // trash zone.
         const liveRect = cardRef.current.getBoundingClientRect()
         onDragMove?.({
           x: liveRect.x,
@@ -80,6 +85,8 @@ export function NoteCard({
   }
 
   const handleResizePointerDown = (event: ReactPointerEvent<HTMLDivElement>) => {
+    // Stop this from bubbling to the card's own pointerdown handler, which
+    // would otherwise also start a move-drag.
     event.stopPropagation()
     resizeDrag.onPointerDown(event)
   }
@@ -95,6 +102,8 @@ export function NoteCard({
 
   const handleBlur = (event: FocusEvent<HTMLTextAreaElement>) => {
     setIsEditing(false)
+    // Skip committing if nothing was actually typed, to avoid unnecessary
+    // notes-array churn (and, e.g., unnecessary re-saves) from a no-op edit.
     if (event.target.value !== note.text) {
       onCommitText(note.id, event.target.value)
     }

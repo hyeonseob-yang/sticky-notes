@@ -124,6 +124,8 @@ body {
   position: fixed;
   right: 24px;
   bottom: 24px;
+  /* High enough to stay above any note, whose z-index is unbounded and
+     assigned dynamically as notes are created/activated. */
   z-index: 9999;
   width: 88px;
   height: 88px;
