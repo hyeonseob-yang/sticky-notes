@@ -2,8 +2,6 @@ import type { NoteColor } from './types'
 
 export const MIN_WIDTH = 90
 export const MIN_HEIGHT = 80
-export const DEFAULT_WIDTH = 200
-export const DEFAULT_HEIGHT = 180
 
 // Minimum pointer travel (px) before a create/move drag counts as a drag
 // rather than a click. Prevents accidental note creation and drops.

@@ -1,11 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import {
-  clampPosition,
-  clampRectMinSize,
-  normalizeRect,
-  rectCenter,
-  rectsIntersect,
-} from './geometry'
+import { clampPosition, clampRectMinSize, normalizeRect, rectsIntersect } from './geometry'
 
 describe('normalizeRect', () => {
   it('handles a drag going down-right', () => {
@@ -109,14 +103,5 @@ describe('rectsIntersect', () => {
     const a = { x: 0, y: 0, width: 100, height: 100 }
     const b = { x: 100, y: 0, width: 100, height: 100 }
     expect(rectsIntersect(a, b)).toBe(false)
-  })
-})
-
-describe('rectCenter', () => {
-  it('returns the midpoint of a rect', () => {
-    expect(rectCenter({ x: 10, y: 20, width: 100, height: 50 })).toEqual({
-      x: 60,
-      y: 45,
-    })
   })
 })
