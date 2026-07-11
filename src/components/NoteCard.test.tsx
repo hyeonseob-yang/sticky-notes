@@ -226,5 +226,19 @@ describe('NoteCard', () => {
         height: MIN_HEIGHT,
       })
     })
+
+    it('clamps the resized dimensions to stay within the viewport', () => {
+      const { onResize } = renderNoteCard({ x: 900, y: 700, width: 100, height: 100 })
+      const handle = screen.getByTestId('resize-handle')
+
+      fireEvent.pointerDown(handle, { clientX: 0, clientY: 0, pointerId: POINTER_ID })
+      fireEvent.pointerMove(window, { clientX: 2000, clientY: 2000, pointerId: POINTER_ID })
+      fireEvent.pointerUp(window, { clientX: 2000, clientY: 2000, pointerId: POINTER_ID })
+
+      expect(onResize).toHaveBeenCalledWith('note-1', {
+        width: window.innerWidth - 900,
+        height: window.innerHeight - 700,
+      })
+    })
   })
 })

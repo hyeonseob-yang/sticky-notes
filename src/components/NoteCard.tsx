@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react'
 import type { ChangeEvent, FocusEvent, PointerEvent as ReactPointerEvent } from 'react'
 import { useDrag } from '../hooks/useDrag'
-import { clampPosition, clampRectMinSize } from '../utils/geometry'
+import { clampPosition, clampRectMinSize, clampSizeToBounds } from '../utils/geometry'
 import { MIN_HEIGHT, MIN_WIDTH, RESIZE_DRAG_THRESHOLD } from '../constants'
 import type { Note, Rect } from '../types'
 
@@ -56,25 +56,28 @@ export function NoteCard({
     },
   })
 
+  // Floors the dragged size to the minimum, then keeps the note's fixed
+  // top-left origin from growing past the viewport (no size cap otherwise).
+  const computeResizedSize = (delta: { dx: number; dy: number }) => {
+    const sized = clampRectMinSize(
+      { x: note.x, y: note.y, width: note.width + delta.dx, height: note.height + delta.dy },
+      MIN_WIDTH,
+      MIN_HEIGHT,
+    )
+    return clampSizeToBounds(sized, { width: window.innerWidth, height: window.innerHeight })
+  }
+
   const resizeDrag = useDrag({
     threshold: RESIZE_DRAG_THRESHOLD,
     onDrag: (delta) => {
       if (cardRef.current) {
-        const { width, height } = clampRectMinSize(
-          { x: note.x, y: note.y, width: note.width + delta.dx, height: note.height + delta.dy },
-          MIN_WIDTH,
-          MIN_HEIGHT,
-        )
+        const { width, height } = computeResizedSize(delta)
         cardRef.current.style.width = `${width}px`
         cardRef.current.style.height = `${height}px`
       }
     },
     onDragEnd: (delta) => {
-      const { width, height } = clampRectMinSize(
-        { x: note.x, y: note.y, width: note.width + delta.dx, height: note.height + delta.dy },
-        MIN_WIDTH,
-        MIN_HEIGHT,
-      )
+      const { width, height } = computeResizedSize(delta)
       onResize(note.id, { width, height })
     },
   })

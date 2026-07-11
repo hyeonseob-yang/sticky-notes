@@ -47,6 +47,25 @@ describe('Canvas', () => {
     expect(onCreateNote).toHaveBeenCalledWith({ x: 100, y: 100, width: MIN_WIDTH, height: MIN_HEIGHT })
   })
 
+  it('keeps a note created near the edge fully within the viewport', () => {
+    const onCreateNote = vi.fn()
+    render(<Canvas onCreateNote={onCreateNote} />)
+    const canvas = screen.getByTestId('canvas')
+
+    // Drag starts close to the bottom-right corner; the min-size floor would
+    // otherwise push the note's far edge past the viewport.
+    fireEvent.pointerDown(canvas, { clientX: 1000, clientY: 740, pointerId: POINTER_ID })
+    fireEvent.pointerMove(window, { clientX: 1015, clientY: 755, pointerId: POINTER_ID })
+    fireEvent.pointerUp(window, { clientX: 1015, clientY: 755, pointerId: POINTER_ID })
+
+    expect(onCreateNote).toHaveBeenCalledWith({
+      x: window.innerWidth - MIN_WIDTH,
+      y: window.innerHeight - MIN_HEIGHT,
+      width: MIN_WIDTH,
+      height: MIN_HEIGHT,
+    })
+  })
+
   it('ignores drags that originate on a child element', () => {
     const onCreateNote = vi.fn()
     render(

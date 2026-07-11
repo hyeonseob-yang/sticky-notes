@@ -39,6 +39,17 @@ export function clampPosition(
   }
 }
 
+export function clampSizeToBounds(
+  rect: Rect,
+  bounds: { width: number; height: number },
+): Rect {
+  return {
+    ...rect,
+    width: Math.min(rect.width, Math.max(0, bounds.width - rect.x)),
+    height: Math.min(rect.height, Math.max(0, bounds.height - rect.y)),
+  }
+}
+
 export function rectsIntersect(a: Rect, b: Rect): boolean {
   return (
     a.x < b.x + b.width &&

@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest'
-import { clampPosition, clampRectMinSize, normalizeRect, rectsIntersect } from './geometry'
+import {
+  clampPosition,
+  clampRectMinSize,
+  clampSizeToBounds,
+  normalizeRect,
+  rectsIntersect,
+} from './geometry'
 
 describe('normalizeRect', () => {
   it('handles a drag going down-right', () => {
@@ -82,6 +88,35 @@ describe('clampPosition', () => {
       y: 0,
       width: 1200,
       height: 900,
+    })
+  })
+})
+
+describe('clampSizeToBounds', () => {
+  const bounds = { width: 1000, height: 800 }
+
+  it('leaves a rect unchanged when it already fits within bounds from its origin', () => {
+    const rect = { x: 700, y: 600, width: 200, height: 150 }
+    expect(clampSizeToBounds(rect, bounds)).toEqual(rect)
+  })
+
+  it('shrinks width and height to fit the remaining space, keeping the origin fixed', () => {
+    const rect = { x: 900, y: 750, width: 300, height: 200 }
+    expect(clampSizeToBounds(rect, bounds)).toEqual({
+      x: 900,
+      y: 750,
+      width: 100,
+      height: 50,
+    })
+  })
+
+  it('does not go negative when the origin is already past the bounds', () => {
+    const rect = { x: 1100, y: 900, width: 200, height: 150 }
+    expect(clampSizeToBounds(rect, bounds)).toEqual({
+      x: 1100,
+      y: 900,
+      width: 0,
+      height: 0,
     })
   })
 })
