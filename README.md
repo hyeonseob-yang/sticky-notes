@@ -32,6 +32,8 @@ npm run lint    # ESLint
 - Edit a note's text by double-clicking it and clicking away (or tabbing) to commit.
 - Notes come in one of five colors, assigned in rotation as they're created.
 - Clicking or dragging a note brings it to the front of the stack.
+- Notes stay within the visible canvas — dragging one past an edge clamps it
+  to the viewport instead of letting it move off-screen.
 - Notes persist to `localStorage` and are restored on page load.
 
 ## Architecture
@@ -59,7 +61,7 @@ the trash zone's rect during a move; the note is deleted instead of
 repositioned if the two rects overlap when it's released.
 
 Pure geometry logic (normalizing a drag into a rect, clamping to a minimum
-size, clamping to bounds, rect/point intersection tests) lives in
+size, clamping to bounds, rect intersection tests) lives in
 `src/utils/geometry.ts` and is unit-tested independently of any component.
 
 ## Decisions and trade-offs
