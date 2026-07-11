@@ -73,6 +73,7 @@ body {
   border-radius: 6px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
   color: #1f2028;
+  font-size: 15px;
   cursor: grab;
   touch-action: none;
   user-select: none;
@@ -85,7 +86,6 @@ body {
   overflow-y: auto;
   white-space: pre-wrap;
   word-break: break-word;
-  font-size: 15px;
 }
 
 .note-card__textarea {
